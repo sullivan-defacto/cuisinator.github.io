@@ -1,0 +1,663 @@
+   <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cuisinator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Lato:wght@300;400;700&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(ellipse at top, #1a0533 0%, #0d001a 60%);
+      font-family: 'Lato', sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Étoiles animées */
+    .stars {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: #fff;
+      border-radius: 50%;
+      animation: twinkle linear infinite;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; transform: scale(0.5); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Bulles flottantes */
+    .bubbles {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .bubble {
+      position: absolute;
+      bottom: -60px;
+      border-radius: 50%;
+      animation: floatUp linear infinite;
+      opacity: 0.15;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) translateX(0); opacity: 0.15; }
+      50% { opacity: 0.3; transform: translateY(-40vh) translateX(20px); }
+      100% { transform: translateY(-100vh) translateX(-10px); opacity: 0; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 720px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+    }
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 2.8rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ff9a3c, #ffd700, #ff6b35);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: none;
+      letter-spacing: 4px;
+      filter: drop-shadow(0 0 20px rgba(255, 154, 60, 0.5));
+    }
+    .logo-emoji {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 4px;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: #c9a0ff;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    /* Progress */
+    .progress-container {
+      width: 100%;
+    }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      color: #c9a0ff;
+    }
+    .progress-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #9b59b6, #ffd700, #ff6b35);
+      border-radius: 10px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+    }
+
+    /* Card question */
+    .card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 40px 36px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,154,60,0.1);
+      animation: slideIn 0.4s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .question-number {
+      font-size: 0.8rem;
+      color: #ffd700;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .question-text {
+      font-size: 1.4rem;
+      font-weight: 300;
+      line-height: 1.6;
+      color: #fff;
+      margin-bottom: 8px;
+      min-height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Mascotte pensante */
+    .mascot {
+      font-size: 4rem;
+      margin: 16px 0;
+      animation: think 2s ease-in-out infinite;
+    }
+    @keyframes think {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    /* Boutons réponses */
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      margin-top: 24px;
+    }
+    .answer-btn {
+      padding: 14px 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      font-size: 1rem;
+      font-family: 'Lato', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      letter-spacing: 0.5px;
+    }
+    .answer-btn:hover {
+      background: rgba(255, 154, 60, 0.25);
+      border-color: rgba(255, 154, 60, 0.5);
+      transform: translateX(4px);
+      box-shadow: 0 4px 15px rgba(255, 154, 60, 0.2);
+    }
+    .answer-btn:active {
+      transform: scale(0.98);
+    }
+    .answer-btn.yes { border-left: 3px solid #4ade80; }
+    .answer-btn.probably-yes { border-left: 3px solid #a3e635; }
+    .answer-btn.dunno { border-left: 3px solid #fbbf24; }
+    .answer-btn.probably-no { border-left: 3px solid #fb923c; }
+    .answer-btn.no { border-left: 3px solid #f87171; }
+
+    /* Écran de résultat */
+    .result-card {
+      background: linear-gradient(135deg, rgba(155, 89, 182, 0.2), rgba(255, 107, 53, 0.15));
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 28px;
+      padding: 48px 36px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,215,0,0.15), inset 0 0 60px rgba(255,154,60,0.05);
+      animation: revealCard 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes revealCard {
+      from { opacity: 0; transform: scale(0.7) rotate(-3deg); }
+      to { opacity: 1; transform: scale(1) rotate(0deg); }
+    }
+
+    .result-label {
+      font-size: 0.8rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #ffd700;
+      margin-bottom: 12px;
+    }
+    .result-mascot {
+      font-size: 5rem;
+      margin: 16px 0;
+      animation: tada 0.6s ease;
+    }
+    @keyframes tada {
+      0%, 100% { transform: scale(1); }
+      20% { transform: scale(1.3) rotate(-3deg); }
+      40% { transform: scale(1.3) rotate(3deg); }
+      60% { transform: scale(1.1) rotate(-1deg); }
+      80% { transform: scale(1.1) rotate(1deg); }
+    }
+    .result-thinking {
+      font-size: 1rem;
+      color: #c9a0ff;
+      font-style: italic;
+      margin-bottom: 20px;
+    }
+    .result-name {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffd700, #ff9a3c, #ff6b35);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .result-desc {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    .result-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, #ff6b35, #ffd700);
+      color: #1a0533;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 50px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+      letter-spacing: 0.5px;
+    }
+    .result-link:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 8px 30px rgba(255, 107, 53, 0.6);
+    }
+    .replay-btn {
+      display: block;
+      margin: 20px auto 0;
+      padding: 10px 24px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.6);
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: 'Lato', sans-serif;
+      transition: all 0.2s;
+    }
+    .replay-btn:hover {
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    /* Intro */
+    .intro-card {
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 48px 36px;
+      width: 100%;
+      text-align: center;
+    }
+    .intro-text {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.75);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .start-btn {
+      padding: 16px 48px;
+      background: linear-gradient(135deg, #9b59b6, #ff6b35);
+      color: #fff;
+      font-size: 1.1rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(155, 89, 182, 0.4);
+    }
+    .start-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(155, 89, 182, 0.6);
+    }
+
+    /* Écran de chargement */
+    .loading-card {
+      padding: 60px 36px;
+      text-align: center;
+    }
+    .loading-spinner {
+      font-size: 3rem;
+      animation: spin 1s linear infinite;
+      display: block;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .loading-text {
+      color: #c9a0ff;
+      font-style: italic;
+    }
+
+    .hidden { display: none !important; }
+
+    /* Confettis */
+    .confetti-container {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 100;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      top: -20px;
+      width: 10px;
+      height: 10px;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Décor de fond -->
+  <div class="stars" id="stars"></div>
+  <div class="bubbles" id="bubbles"></div>
+  <div class="confetti-container" id="confetti"></div>
+
+  <div class="container">
+    <div class="header">
+      <span class="logo-emoji">🍽️</span>
+      <div class="logo">CUISINATOR</div>
+      <div class="subtitle">Le génie de la gastronomie</div>
+    </div>
+
+    <!-- Intro -->
+    <div class="card intro-card" id="screen-intro">
+      <div class="mascot">🧞</div>
+      <p class="intro-text">
+        Je suis <strong>Cuisinator</strong>, le génie omniscient des saveurs.<br><br>
+        Pensez à un endroit où vous aimeriez manger.
+        Je vais vous poser <strong>20 questions</strong> et deviner votre endroit idéal...
+        avec une précision mystérieuse ! 🔮
+      </p>
+      <button class="start-btn" onclick="startGame()">Commencer !</button>
+    </div>
+
+    <!-- Jeu -->
+    <div id="screen-game" class="hidden" style="width:100%;display:flex;flex-direction:column;gap:20px;align-items:center;">
+      <div class="progress-container">
+        <div class="progress-header">
+          <span id="progress-label">Question 1 / 20</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="card" id="question-card">
+        <div class="question-number" id="q-number">QUESTION 1</div>
+        <div class="mascot" id="q-mascot">🤔</div>
+        <div class="question-text" id="q-text">Chargement...</div>
+        <div class="answers">
+          <button class="answer-btn yes" onclick="answer('oui')">✅ Oui</button>
+          <button class="answer-btn probably-yes" onclick="answer('probablement')">🟡 Probablement</button>
+          <button class="answer-btn dunno" onclick="answer('sais-pas')">🤷 Je ne sais pas</button>
+          <button class="answer-btn probably-no" onclick="answer('probablement-pas')">🟠 Probablement pas</button>
+          <button class="answer-btn no" onclick="answer('non')">❌ Non</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chargement résultat -->
+    <div class="card loading-card hidden" id="screen-loading">
+      <span class="loading-spinner">🔮</span>
+      <p class="loading-text">Je consulte les esprits de la gastronomie...</p>
+    </div>
+
+    <!-- Résultat -->
+    <div class="result-card hidden" id="screen-result">
+      <div class="result-label">✨ J'ai trouvé ✨</div>
+      <div class="result-mascot">🧞‍♂️</div>
+      <p class="result-thinking">Après analyse approfondie de vos réponses, les astres culinaires me révèlent...</p>
+      <div class="result-name">Compose Paris</div>
+      <p class="result-desc">
+        Un restaurant incontournable au cœur de Paris — sandwichs artisanaux,
+        ingrédients frais et saveurs qui font voyager.
+        Exactement ce que votre âme gourmande réclamait ! 🥖✨
+      </p>
+      <a class="result-link" href="https://maps.app.goo.gl/oRFBJsdT3k482feJ7" target="_blank" rel="noopener">
+        📍 Voir sur Google Maps
+      </a>
+      <button class="replay-btn" onclick="resetGame()">↩ Rejouer</button>
+    </div>
+  </div>
+
+  <script>
+    // ─── Décor ───────────────────────────────────────────────────────────────
+
+    (function createStars() {
+      const container = document.getElementById('stars');
+      for (let i = 0; i < 120; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        const size = Math.random() * 3 + 1;
+        s.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${Math.random()*100}%;
+          top:${Math.random()*100}%;
+          animation-duration:${Math.random()*4+2}s;
+          animation-delay:${Math.random()*4}s;
+        `;
+        container.appendChild(s);
+      }
+    })();
+
+    (function createBubbles() {
+      const container = document.getElementById('bubbles');
+      const colors = ['#ff9a3c','#ffd700','#9b59b6','#ff6b35','#fff'];
+      setInterval(() => {
+        const b = document.createElement('div');
+        b.className = 'bubble';
+        const size = Math.random()*30+10;
+        b.style.cssText = `
+          width:${size}px; height:${size}px;
+          left:${Math.random()*100}%;
+          background:${colors[Math.floor(Math.random()*colors.length)]};
+          animation-duration:${Math.random()*6+5}s;
+          animation-delay:0s;
+        `;
+        container.appendChild(b);
+        setTimeout(() => b.remove(), 12000);
+      }, 800);
+    })();
+
+    function launchConfetti() {
+      const container = document.getElementById('confetti');
+      const colors = ['#ff9a3c','#ffd700','#9b59b6','#ff6b35','#4ade80','#f87171','#60a5fa'];
+      for (let i = 0; i < 80; i++) {
+        setTimeout(() => {
+          const c = document.createElement('div');
+          c.className = 'confetti-piece';
+          const size = Math.random()*12+5;
+          c.style.cssText = `
+            left:${Math.random()*100}%;
+            width:${size}px; height:${size}px;
+            background:${colors[Math.floor(Math.random()*colors.length)]};
+            border-radius:${Math.random()>0.5?'50%':'2px'};
+            animation-duration:${Math.random()*2+1.5}s;
+            animation-delay:${Math.random()*0.5}s;
+          `;
+          container.appendChild(c);
+          setTimeout(() => c.remove(), 4000);
+        }, i * 30);
+      }
+    }
+
+    // ─── Questions ────────────────────────────────────────────────────────────
+
+    const ALL_QUESTIONS = [
+      { text: "Aimez-vous manger épicé ?", mascot: "🌶️" },
+      { text: "Préférez-vous les plats chauds aux plats froids ?", mascot: "🍲" },
+      { text: "Avez-vous déjà mangé dans un restaurant étoilé ?", mascot: "⭐" },
+      { text: "Aimez-vous cuisiner vous-même ?", mascot: "👨‍🍳" },
+      { text: "Préférez-vous le sucré au salé ?", mascot: "🍰" },
+      { text: "Mangez-vous souvent de la street food ?", mascot: "🌮" },
+      { text: "Êtes-vous végétarien ou végétalien ?", mascot: "🥦" },
+      { text: "Aimez-vous les fromages français ?", mascot: "🧀" },
+      { text: "Buvez-vous du café tous les jours ?", mascot: "☕" },
+      { text: "Aimez-vous les fruits de mer ?", mascot: "🦞" },
+      { text: "Avez-vous une allergie alimentaire ?", mascot: "🚫" },
+      { text: "Préférez-vous dîner en terrasse ?", mascot: "🌿" },
+      { text: "Aimez-vous partager un plat en famille ?", mascot: "👨‍👩‍👧" },
+      { text: "Êtes-vous plutôt petit-déjeuner copieux ?", mascot: "🥐" },
+      { text: "Avez-vous déjà goûté la cuisine japonaise ?", mascot: "🍣" },
+      { text: "Aimez-vous le pain artisanal ?", mascot: "🥖" },
+      { text: "Regardez-vous des émissions culinaires ?", mascot: "📺" },
+      { text: "Mangez-vous souvent des sandwichs à midi ?", mascot: "🥪" },
+      { text: "Préférez-vous les sauces légères aux sauces riches ?", mascot: "🫙" },
+      { text: "Aimez-vous les restaurants avec une déco originale ?", mascot: "🎨" },
+      { text: "Avez-vous déjà cuisiné un soufflé ?", mascot: "🍮" },
+      { text: "Préférez-vous manger dehors à manger chez vous ?", mascot: "🏙️" },
+      { text: "Aimez-vous les saveurs umami ?", mascot: "🍄" },
+      { text: "Prenez-vous souvent des desserts au restaurant ?", mascot: "🍨" },
+      { text: "Aimez-vous les cuisines du monde ?", mascot: "🌍" },
+      { text: "Avez-vous déjà fait un marché alimentaire local ?", mascot: "🛒" },
+      { text: "Préférez-vous le vin rouge au vin blanc ?", mascot: "🍷" },
+      { text: "Aimez-vous le chocolat noir ?", mascot: "🍫" },
+      { text: "Mangez-vous des légumineuses régulièrement ?", mascot: "🫘" },
+      { text: "Avez-vous un plat préféré d'enfance ?", mascot: "🍝" },
+      { text: "Aimez-vous cuisiner avec des herbes fraîches ?", mascot: "🌿" },
+      { text: "Préférez-vous un menu dégustation à la carte ?", mascot: "📋" },
+      { text: "Avez-vous un restaurant favori à Paris ?", mascot: "🗼" },
+      { text: "Aimez-vous le brunch du week-end ?", mascot: "🍳" },
+      { text: "Commandez-vous souvent à emporter ?", mascot: "📦" },
+      { text: "Aimez-vous les plats mijotés longtemps ?", mascot: "🫕" },
+      { text: "Avez-vous déjà participé à un cours de cuisine ?", mascot: "🏫" },
+      { text: "Aimez-vous les smoothies et jus frais ?", mascot: "🥤" },
+      { text: "Préférez-vous un repas rapide à un repas long ?", mascot: "⏱️" },
+      { text: "Aimez-vous les plats avec beaucoup de légumes colorés ?", mascot: "🌈" },
+      { text: "Avez-vous déjà mangé de la cuisine péruvienne ?", mascot: "🫑" },
+      { text: "Aimez-vous les food trucks ?", mascot: "🚚" },
+      { text: "Cherchez-vous souvent de nouveaux restaurants en ligne ?", mascot: "📱" },
+      { text: "Préférez-vous les petites portions raffinées ?", mascot: "🍡" },
+      { text: "Aimez-vous les plats réconfortants par temps froid ?", mascot: "❄️" },
+      { text: "Avez-vous déjà préparé vos propres pâtes fraîches ?", mascot: "🍜" },
+      { text: "Aimez-vous les marchés nocturnes de cuisine ?", mascot: "🌙" },
+      { text: "Prenez-vous souvent le temps de savourer votre repas ?", mascot: "😌" },
+      { text: "Aimez-vous associer nourriture et musique live ?", mascot: "🎵" },
+      { text: "Avez-vous déjà essayé une recette de Gordon Ramsay ?", mascot: "👨‍🍳" },
+    ];
+
+    // ─── État du jeu ──────────────────────────────────────────────────────────
+
+    let selectedQuestions = [];
+    let currentIndex = 0;
+    const TOTAL = 20;
+
+    // ─── Fonctions ────────────────────────────────────────────────────────────
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function show(id) {
+      ['screen-intro','screen-game','screen-loading','screen-result'].forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function startGame() {
+      selectedQuestions = shuffle(ALL_QUESTIONS).slice(0, TOTAL);
+      currentIndex = 0;
+      show('screen-game');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const q = selectedQuestions[currentIndex];
+      const progress = Math.round((currentIndex / TOTAL) * 100);
+
+      document.getElementById('progress-label').textContent = `Question ${currentIndex + 1} / ${TOTAL}`;
+      document.getElementById('progress-percent').textContent = `${progress}%`;
+      document.getElementById('progress-fill').style.width = `${progress}%`;
+
+      document.getElementById('q-number').textContent = `QUESTION ${currentIndex + 1}`;
+      document.getElementById('q-mascot').textContent = q.mascot;
+      document.getElementById('q-text').textContent = q.text;
+
+      // Re-animation de la carte
+      const card = document.getElementById('question-card');
+      card.style.animation = 'none';
+      void card.offsetWidth;
+      card.style.animation = 'slideIn 0.4s ease';
+    }
+
+    function answer(_response) {
+      currentIndex++;
+      if (currentIndex >= TOTAL) {
+        showResult();
+      } else {
+        renderQuestion();
+      }
+    }
+
+    function showResult() {
+      show('screen-loading');
+      // Fausse attente dramatique
+      setTimeout(() => {
+        show('screen-result');
+        launchConfetti();
+        document.getElementById('progress-fill').style.width = '100%';
+        document.getElementById('progress-percent').textContent = '100%';
+        document.getElementById('progress-label').textContent = `Question ${TOTAL} / ${TOTAL}`;
+      }, 2800);
+    }
+
+    function resetGame() {
+      show('screen-intro');
+    }
+  </script>
+</body>
+</html>
